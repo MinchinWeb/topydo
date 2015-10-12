@@ -22,8 +22,6 @@ def find_version(*file_paths):
 
 
 conditional_dependencies = {
-    # shutil.get_terminal_size() was introduced in Python 3.3
-    "backports.shutil_get_terminal_size>=1.0.0": sys.hexversion < 0x30300F0,
 }
 
 
@@ -41,6 +39,7 @@ setup(
     ] + [p for p, cond in conditional_dependencies.items() if cond],
     extras_require = {
         ':sys_platform=="win32"': ['colorama>=0.2.5'],
+        ':python_version < 3.3': ['backports.shutil_get_terminal_size>=1.0.0'],  # shutil.get_terminal_size() was introduced in Python 3.3
         'ical': ['icalendar'],
         'prompt-toolkit': ['prompt-toolkit >= 0.53'],
         'edit-cmd-tests': ['mock'],
