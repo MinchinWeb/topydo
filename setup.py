@@ -35,7 +35,7 @@ setup(
     ],
     extras_require = {
         ':sys_platform=="win32"': ['colorama>=0.2.5'],
-        ':python_version<"3.3.0"': ['backports.shutil_get_terminal_size>=1.0.0'],  # shutil.get_terminal_size() was introduced in Python 3.3
+        ':python_version=="2.7"': ['backports.shutil_get_terminal_size>=1.0.0'],  # shutil.get_terminal_size() was introduced in Python 3.3
         'ical': ['icalendar'],
         'prompt-toolkit': ['prompt-toolkit >= 0.53'],
         'edit-cmd-tests': ['mock'],
