@@ -21,22 +21,27 @@ from topydo.lib.Config import config
 
 
 class ConfigTest(TopydoTest):
-    def test_config1(self):
+    def test_config01(self):
         self.assertEqual(config("test/data/config1").default_command(), 'do')
 
-    def test_config2(self):
+    def test_config02(self):
         self.assertNotEqual(config("").default_command(), 'do')
 
-    def test_config3(self):
+    def test_config03(self):
         self.assertTrue(config("test/data/config2").ignore_weekends())
 
-    def test_config4(self):
+    def test_config04(self):
         """ Test that value in file is overridden by parameter. """
         overrides = {
             ('topydo', 'default_command'): 'edit'
         }
 
         self.assertEqual(config("test/data/config1", p_overrides=overrides).default_command(), 'edit')
+
+    def test_config09(self):
+        """ Bad human readable dates switch value. """
+        self.assertEqual(config("test/data/ConfigTest4.conf").list_human_dates(),
+                         bool(int(config().defaults["ls"]["human_readable_dates"])))
 
 if __name__ == '__main__':
     unittest.main()
