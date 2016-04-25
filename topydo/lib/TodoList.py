@@ -21,7 +21,7 @@ A list of todo items.
 import types
 
 from topydo.lib.Config import config
-from topydo.lib.TodoListBase import TodoListBase
+from topydo.lib.TodoListBase import InvalidTodoException, TodoListBase
 
 
 def _needs_dependencies(p_function):
@@ -112,7 +112,33 @@ class TodoList(TodoListBase):
         self._maintain_dep_graph(p_todo)
         self._tododict[hash(p_todo)] = p_todo
 
+    @_needs_dependencies
+    def _postprocess_dependencies(self, p_todo, p_tag):
+        """
+        Post-processes a parsed todo when adding/appending it to the list.
+
+        * Handles more user-friendly dependencies with before:, partof: and
+        after: tags
+        """
+        for value in p_todo.tag_values(p_tag):
+            try:
+                dep = self.todo(value)
+
+                if p_tag == 'after':
+                    self.add_dependency(p_todo, dep)
+                elif p_tag == 'before' or p_tag == 'partof':
+                    self.add_dependency(dep, p_todo)
+            except InvalidTodoException:
+                pass
+
+            p_todo.remove_tag(p_tag, value)
+
     def add_todos(self, p_todos):
+        for todo in p_todos:
+            self._postprocess_dependencies(todo, 'partof')
+            self._postprocess_dependencies(todo, 'before')
+            self._postprocess_dependencies(todo, 'after')
+
         super().add_todos(p_todos)
 
         for todo in self._todos:
@@ -123,6 +149,18 @@ class TodoList(TodoListBase):
             # _needs_dependencies decorator)
             if self._initialized:
                 self._register_todo(todo)
+
+    def append(self, p_todo, p_string):
+        """
+        Appends a text to the todo, specified by its number.
+        The todo will be parsed again, such that tags and projects in the
+        appended string are processed.
+        """
+        super().append(p_todo, p_string)
+
+        self._postprocess_dependencies(p_todo, 'partof')
+        self._postprocess_dependencies(p_todo, 'before')
+        self._postprocess_dependencies(p_todo, 'after')
 
     def delete(self, p_todo):
         """ Deletes a todo item from the list. """

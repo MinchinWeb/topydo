@@ -155,8 +155,13 @@ class TodoListBase(object):
         """ Add an Todo object to the list. """
         self.add_todos([p_todo])
 
-    def add_todos(self, p_todos):
+    def add_todos(self, p_todos, process_tags=False):
         for todo in p_todos:
+            if process_tags:
+                self._convert_date(todo, config().tag_start())
+                self._convert_date(todo, config().tag_due())
+                if config().auto_creation_date():
+                    todo.set_creation_date(date.today())
             self._todos.append(todo)
 
         self._update_todo_ids()

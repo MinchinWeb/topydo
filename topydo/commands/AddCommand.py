@@ -70,50 +70,8 @@ class AddCommand(Command):
 
             return todo_text
 
-        def _postprocess_input_todo(p_todo):
-            """
-            Post-processes a parsed todo when adding it to the list.
-
-            * It converts relative dates to absolute ones.
-            * Automatically inserts a creation date if not present.
-            * Handles more user-friendly dependencies with before:, partof: and
-            after: tags
-            """
-            def convert_date(p_tag):
-                value = p_todo.tag_value(p_tag)
-
-                if value:
-                    dateobj = relative_date_to_date(value)
-                    if dateobj:
-                        p_todo.set_tag(p_tag, dateobj.isoformat())
-
-            def add_dependencies(p_tag):
-                for value in p_todo.tag_values(p_tag):
-                    try:
-                        dep = self.todolist.todo(value)
-
-                        if p_tag == 'after':
-                            self.todolist.add_dependency(p_todo, dep)
-                        elif p_tag == 'before' or p_tag == 'partof':
-                            self.todolist.add_dependency(dep, p_todo)
-                    except InvalidTodoException:
-                        pass
-
-                    p_todo.remove_tag(p_tag, value)
-
-            convert_date(config().tag_start())
-            convert_date(config().tag_due())
-
-            add_dependencies('partof')
-            add_dependencies('before')
-            add_dependencies('after')
-
-            if config().auto_creation_date():
-                p_todo.set_creation_date(date.today())
-
         todo_text = _preprocess_input_todo(p_todo_text)
         todo = self.todolist.add(todo_text)
-        _postprocess_input_todo(todo)
 
         self.out(self.printer.print_todo(todo))
 
